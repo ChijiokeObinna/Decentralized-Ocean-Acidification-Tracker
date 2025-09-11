@@ -111,6 +111,7 @@
       is-active: true
     })
     (var-set total-sensors (+ (var-get total-sensors) u1))
+    (map-set sensor-reputation sensor-id u0)
     (try! (ft-mint? ocean-health-credits u1000 sensor-id))
     (ok sensor-id)
   )
@@ -138,6 +139,7 @@
       (lat-zone (calculate-zone (get lat sensor-location)))
       (lon-zone (calculate-zone (get lon sensor-location)))
       (date-key (/ current-timestamp u144))
+      (rep (default-to u0 (map-get? sensor-reputation sensor-id)))
     )
     (asserts! (get is-active sensor-data) ERR_UNAUTHORIZED)
     (asserts! (is-valid-ph ph-value) ERR_INVALID_PH)
@@ -161,7 +163,9 @@
     )
     
     (var-set total-readings reading-id)
-    (try! (ft-mint? ocean-health-credits (var-get reward-per-reading) sensor-id))
+    (let ((base-reward (var-get reward-per-reading)) (bonus (/ rep u10)) (total-reward (+ base-reward bonus)))
+      (try! (ft-mint? ocean-health-credits total-reward sensor-id))
+    )
     (ok reading-id)
   )
 )
@@ -193,6 +197,9 @@
     )
     (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
     (asserts! (not (get validated reading-data)) ERR_UNAUTHORIZED)
+    (let ((current-rep (default-to u0 (map-get? sensor-reputation (get sensor-id reading-data)))))
+      (map-set sensor-reputation (get sensor-id reading-data) (+ current-rep u1))
+    )
     (map-set ph-readings reading-id (merge reading-data {validated: true}))
     (try! (ft-mint? ocean-health-credits u50 (get sensor-id reading-data)))
     (ok true)
@@ -240,4 +247,10 @@
       none
     )
   )
+)
+
+(define-map sensor-reputation principal uint)
+
+(define-read-only (get-sensor-reputation (sensor-id principal))
+  (default-to u0 (map-get? sensor-reputation sensor-id))
 )
