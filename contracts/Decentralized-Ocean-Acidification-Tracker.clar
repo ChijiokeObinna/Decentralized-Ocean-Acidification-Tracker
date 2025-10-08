@@ -251,6 +251,59 @@
 
 (define-map sensor-reputation principal uint)
 
+(define-public (submit-bulk-readings (readings (list 5 {ph-value: uint, temperature: uint})))
+  (let
+    (
+      (sensor-id tx-sender)
+      (sensor-data (unwrap! (map-get? sensors sensor-id) ERR_SENSOR_NOT_FOUND))
+    )
+    (asserts! (get is-active sensor-data) ERR_UNAUTHORIZED)
+    (fold process-bulk-reading readings (ok u0))
+  )
+)
+
+(define-private (process-bulk-reading (reading {ph-value: uint, temperature: uint}) (result (response uint uint)))
+  (match result
+    success
+    (let
+      (
+        (sensor-id tx-sender)
+        (reading-id (+ (var-get total-readings) u1))
+        (current-timestamp stacks-block-height)
+        (sensor-data (unwrap! (map-get? sensors sensor-id) ERR_SENSOR_NOT_FOUND))
+        (sensor-location (get location sensor-data))
+        (lat-zone (calculate-zone (get lat sensor-location)))
+        (lon-zone (calculate-zone (get lon sensor-location)))
+        (date-key (/ current-timestamp u144))
+        (ph-value (get ph-value reading))
+        (temperature (get temperature reading))
+        (rep (default-to u0 (map-get? sensor-reputation sensor-id)))
+      )
+      (asserts! (is-valid-ph ph-value) ERR_INVALID_PH)
+      (asserts! (is-valid-temperature temperature) ERR_INVALID_PH)
+      (map-set ph-readings reading-id {
+        sensor-id: sensor-id,
+        ph-value: ph-value,
+        temperature: temperature,
+        timestamp: current-timestamp,
+        location: sensor-location,
+        validated: false
+      })
+      (map-set sensor-readings {sensor: sensor-id, reading-id: reading-id} reading-id)
+      (update-daily-average date-key lat-zone lon-zone ph-value)
+      (map-set sensors sensor-id
+        (merge sensor-data {total-readings: (+ (get total-readings sensor-data) u1)})
+      )
+      (var-set total-readings reading-id)
+      (let ((base-reward (var-get reward-per-reading)) (bonus (/ rep u10)) (total-reward (+ base-reward bonus)))
+        (try! (ft-mint? ocean-health-credits total-reward sensor-id))
+      )
+      (ok reading-id)
+    )
+    error (err error)
+  )
+)
+
 (define-read-only (get-sensor-reputation (sensor-id principal))
   (default-to u0 (map-get? sensor-reputation sensor-id))
 )

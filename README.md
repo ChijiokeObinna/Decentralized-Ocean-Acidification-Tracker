@@ -1,4 +1,4 @@
-## 📖 Overview
+##  Overview
 
 A blockchain-based solution for transparently tracking ocean pH levels using decentralized sensor buoys. This smart contract creates an immutable global database of ocean acidification data with token-based incentives for environmental monitoring.
 
@@ -159,3 +159,33 @@ Join the mission to save our oceans! Submit PRs, report issues, or propose new f
 ---
 
 *Made with 💙 for ocean conservation and blockchain transparency*
+
+## 🆕 Recent Enhancements
+
+### 🚀 Bulk Reading Submission
+- Submit up to 5 pH and temperature readings in a single transaction
+- Reduces transaction costs for high-volume data collection
+- Maintains all validation and reward mechanisms for each reading
+- Enhances scalability for sensor networks
+
+#### Submit Bulk Readings
+```clarity
+(contract-call? .decentralized-ocean-acidification-tracker submit-bulk-readings
+  (list {ph-value: u820, temperature: u2500} {ph-value: u815, temperature: u2520}))
+;; Submits two readings: pH 8.20/25.0°C and pH 8.15/25.2°C
+```
+
+### Updated Smart Contract Functions
+
+#### Public Functions (Updated)
+| Function | Description |
+|----------|-------------|
+| `register-sensor` | Register new sensor with coordinates |
+| `submit-ph-reading` | Submit pH and temperature data |
+| `submit-bulk-readings` | Submit multiple pH and temperature readings (up to 5) |
+| `validate-reading` | Admin validates sensor reading |
+| `transfer-tokens` | Transfer OHC tokens |
+| `deactivate-sensor` | Disable sensor |
+| `set-reward-rate` | Admin adjusts token rewards |
+
+#OceanTech #BulkData #EfficiencyUpgrade
