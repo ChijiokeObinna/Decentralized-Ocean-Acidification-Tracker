@@ -6,12 +6,14 @@
 (define-constant ERR_SENSOR_ALREADY_EXISTS (err u405))
 (define-constant ERR_INSUFFICIENT_TOKENS (err u406))
 (define-constant ERR_READING_NOT_FOUND (err u407))
+(define-constant CRITICAL_PH_THRESHOLD_DEFAULT u700)
 
 (define-fungible-token ocean-health-credits)
 
 (define-data-var total-sensors uint u0)
 (define-data-var total-readings uint u0)
 (define-data-var reward-per-reading uint u100)
+(define-data-var critical-ph-threshold uint CRITICAL_PH_THRESHOLD_DEFAULT)
 
 (define-map sensors 
   principal 
@@ -49,6 +51,17 @@
   }
 )
 
+(define-map critical-ph-alerts
+  uint
+  {
+    sensor-id: principal,
+    ph-value: uint,
+    location: {lat: int, lon: int},
+    timestamp: uint,
+    alert-level: uint
+  }
+)
+
 (define-read-only (get-sensor-info (sensor-id principal))
   (map-get? sensors sensor-id)
 )
@@ -75,6 +88,14 @@
 
 (define-read-only (get-daily-average (date uint) (lat-zone int) (lon-zone int))
   (map-get? daily-averages {date: date, lat-zone: lat-zone, lon-zone: lon-zone})
+)
+
+(define-read-only (get-critical-ph-threshold)
+  (var-get critical-ph-threshold)
+)
+
+(define-read-only (get-critical-ph-alert (alert-id uint))
+  (map-get? critical-ph-alerts alert-id)
 )
 
 (define-read-only (calculate-zone (coordinate int))
@@ -144,7 +165,9 @@
     (asserts! (get is-active sensor-data) ERR_UNAUTHORIZED)
     (asserts! (is-valid-ph ph-value) ERR_INVALID_PH)
     (asserts! (is-valid-temperature temperature) ERR_INVALID_PH)
-    
+
+    (check-critical-ph-alert ph-value sensor-id sensor-location current-timestamp)
+
     (map-set ph-readings reading-id {
       sensor-id: sensor-id,
       ph-value: ph-value,
@@ -221,6 +244,14 @@
   )
 )
 
+(define-public (set-critical-ph-threshold (new-threshold uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
+    (var-set critical-ph-threshold new-threshold)
+    (ok true)
+  )
+)
+
 (define-read-only (get-sensor-readings (sensor-id principal) (reading-id uint))
   (let
     (
@@ -281,6 +312,7 @@
       )
       (asserts! (is-valid-ph ph-value) ERR_INVALID_PH)
       (asserts! (is-valid-temperature temperature) ERR_INVALID_PH)
+      (check-critical-ph-alert ph-value sensor-id sensor-location current-timestamp)
       (map-set ph-readings reading-id {
         sensor-id: sensor-id,
         ph-value: ph-value,
@@ -306,4 +338,23 @@
 
 (define-read-only (get-sensor-reputation (sensor-id principal))
   (default-to u0 (map-get? sensor-reputation sensor-id))
+)
+
+(define-private (check-critical-ph-alert (ph-value uint) (sensor-id principal) (location {lat: int, lon: int}) (timestamp uint))
+  (if (<= ph-value (var-get critical-ph-threshold))
+    (let
+      (
+        (alert-id (+ (var-get total-readings) u1))
+      )
+      (map-set critical-ph-alerts alert-id {
+        sensor-id: sensor-id,
+        ph-value: ph-value,
+        location: location,
+        timestamp: timestamp,
+        alert-level: u1
+      })
+      true
+    )
+    false
+  )
 )

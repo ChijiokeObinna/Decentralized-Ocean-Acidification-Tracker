@@ -189,3 +189,56 @@ Join the mission to save our oceans! Submit PRs, report issues, or propose new f
 | `set-reward-rate` | Admin adjusts token rewards |
 
 #OceanTech #BulkData #EfficiencyUpgrade
+
+## 🚨 Critical pH Alert System
+
+### 🌊 Automated Ocean Acidification Monitoring
+- **Real-time Alerts**: Automatically triggers alerts when pH levels drop below critical thresholds
+- **Configurable Thresholds**: Admin-adjustable pH alert levels (default: 7.0)
+- **Geospatial Tracking**: Alerts include precise location data for targeted response
+- **Immutable Records**: All alerts stored on-chain for transparency and accountability
+
+#### Set Critical pH Threshold
+```clarity
+(contract-call? .decentralized-ocean-acidification-tracker set-critical-ph-threshold u650)
+;; Sets alert threshold to pH 6.50
+```
+
+#### Check Current Threshold
+```clarity
+(contract-call? .decentralized-ocean-acidification-tracker get-critical-ph-threshold)
+;; Returns current alert threshold value
+```
+
+#### View Critical Alert
+```clarity
+(contract-call? .decentralized-ocean-acidification-tracker get-critical-ph-alert u123)
+;; Retrieves details of alert ID 123
+```
+
+### Updated Smart Contract Functions
+
+#### Public Functions (Updated)
+| Function | Description |
+|----------|-------------|
+| `register-sensor` | Register new sensor with coordinates |
+| `submit-ph-reading` | Submit pH and temperature data |
+| `submit-bulk-readings` | Submit multiple pH and temperature readings (up to 5) |
+| `validate-reading` | Admin validates sensor reading |
+| `transfer-tokens` | Transfer OHC tokens |
+| `deactivate-sensor` | Disable sensor |
+| `set-reward-rate` | Admin adjusts token rewards |
+| `set-critical-ph-threshold` | Admin sets critical pH alert threshold |
+
+#### Read-Only Functions (Updated)
+| Function | Description |
+|----------|-------------|
+| `get-sensor-info` | Get sensor details |
+| `get-ph-reading` | Get specific pH reading |
+| `get-daily-average` | Get daily average for zone |
+| `get-global-health-score` | Current ocean health percentage |
+| `get-balance` | Check OHC token balance |
+| `get-critical-ph-threshold` | Get current alert threshold |
+| `get-critical-ph-alert` | Get specific critical alert details |
+
+#OceanHealth #CriticalAlerts #EnvironmentalMonitoring
