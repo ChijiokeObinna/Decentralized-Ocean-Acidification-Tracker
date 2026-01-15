@@ -242,3 +242,34 @@ Join the mission to save our oceans! Submit PRs, report issues, or propose new f
 | `get-critical-ph-alert` | Get specific critical alert details |
 
 #OceanHealth #CriticalAlerts #EnvironmentalMonitoring
+
+## 🔄 Sensor Location Update Feature
+
+### 🌐 Dynamic Sensor Relocation
+- **Adaptive Positioning**: Registered sensors can update GPS coordinates in real-time
+- **Mobile Sensor Support**: Enables buoys that drift or relocate with ocean currents
+- **Data Accuracy Enhancement**: Maintains precise geospatial tracking for acidification monitoring
+- **Operational Flexibility**: Reduces need for sensor re-registration during deployments
+
+#### Update Sensor Location
+```clarity
+(contract-call? .decentralized-ocean-acidification-tracker update-sensor-location 26000 -81000)
+;; Updates sensor to new coordinates 26.0°N, 81.0°W
+```
+
+### Updated Smart Contract Functions
+
+#### Public Functions (Updated)
+| Function | Description |
+|----------|-------------|
+| `register-sensor` | Register new sensor with coordinates |
+| `submit-ph-reading` | Submit pH and temperature data |
+| `submit-bulk-readings` | Submit multiple pH and temperature readings (up to 5) |
+| `validate-reading` | Admin validates sensor reading |
+| `transfer-tokens` | Transfer OHC tokens |
+| `deactivate-sensor` | Disable sensor |
+| `set-reward-rate` | Admin adjusts token rewards |
+| `set-critical-ph-threshold` | Admin sets critical pH alert threshold |
+| `update-sensor-location` | Update GPS coordinates for active sensors |
+
+#SensorMobility #AdaptiveMonitoring #GeoUpdates

@@ -252,6 +252,19 @@
   )
 )
 
+(define-public (update-sensor-location (new-lat int) (new-lon int))
+  (let
+    (
+      (sensor-id tx-sender)
+      (sensor-data (unwrap! (map-get? sensors sensor-id) ERR_SENSOR_NOT_FOUND))
+    )
+    (asserts! (get is-active sensor-data) ERR_UNAUTHORIZED)
+    (asserts! (is-valid-coordinates new-lat new-lon) ERR_INVALID_COORDINATES)
+    (map-set sensors sensor-id (merge sensor-data {location: {lat: new-lat, lon: new-lon}}))
+    (ok true)
+  )
+)
+
 (define-read-only (get-sensor-readings (sensor-id principal) (reading-id uint))
   (let
     (
